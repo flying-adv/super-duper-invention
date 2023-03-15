@@ -31,16 +31,17 @@ class CLIPLoss(torch.nn.Module):
 
 class SingleIDCoach(BaseCoach):
 
-    def __init__(self, data_loader, use_wandb):
+    def __init__(self, data_loader, use_wandb,prompt):
         super().__init__(data_loader, use_wandb)
         device = 'cuda'
         cfg_file = "https://huggingface.co/lambdalabs/clip2latent/resolve/main/ffhq-sg2-510.yaml"
         checkpoint =  "https://huggingface.co/lambdalabs/clip2latent/resolve/main/ffhq-sg2-510.ckpt"        
         self.clip_loss = CLIPLoss().to(device)
+        self.prompt = prompt
 
     def train(self):
         # fdfdff
-        text_samples = "a cat which looks like cartoon cat" #a hairy man
+        text_samples = self.prompt
         w_path_dir = f'{paths_config.embedding_base_dir}/{paths_config.input_data_id}'
         os.makedirs(w_path_dir, exist_ok=True)
         os.makedirs(f'{w_path_dir}/{paths_config.pti_results_keyword}', exist_ok=True)

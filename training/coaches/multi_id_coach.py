@@ -38,17 +38,18 @@ class CLIPLoss(torch.nn.Module):
 
 class MultiIDCoach(BaseCoach):
 
-    def __init__(self, data_loader, use_wandb):
+    def __init__(self, data_loader, use_wandb,prompt):
         super().__init__(data_loader, use_wandb)
         device = 'cuda'
 
         self.clip_loss = CLIPLoss().to(device)
+        self.prompt = prompt
 
     def train(self):
         # text_condn = ['beard','french beard']
         text_condn = ['big eyes', 'red eyes', 'big eyes with red eyes']
         for text_c in text_condn:
-          text_samples = f"a cat with {text_c}"
+          text_samples = self.prompt
           self.G.synthesis.train()
           self.G.mapping.train()
 

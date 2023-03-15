@@ -9,9 +9,10 @@ import wandb
 from training.coaches.multi_id_coach import MultiIDCoach
 from training.coaches.single_id_coach import SingleIDCoach
 from utils.ImagesDataset import ImagesDataset
+import argparse
 
 
-def run_PTI(run_name='', use_wandb=False, use_multi_id_training=False):
+def run_PTI(run_name='', use_wandb=False, use_multi_id_training=False,args=None):
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
     os.environ['CUDA_VISIBLE_DEVICES'] = global_config.cuda_visible_devices
 
@@ -36,9 +37,9 @@ def run_PTI(run_name='', use_wandb=False, use_multi_id_training=False):
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
     if use_multi_id_training:
-        coach = MultiIDCoach(dataloader, use_wandb)
+        coach = MultiIDCoach(dataloader, use_wandb,args.prompt)
     else:
-        coach = SingleIDCoach(dataloader, use_wandb)
+        coach = SingleIDCoach(dataloader, use_wandb,args.prompt)
 
     coach.train()
 
@@ -46,4 +47,7 @@ def run_PTI(run_name='', use_wandb=False, use_multi_id_training=False):
 
 
 if __name__ == '__main__':
-    run_PTI(run_name='', use_wandb=False, use_multi_id_training=True)
+    parser = argparse.ArgumentParser(description="Inference")
+    parser.add_argument("--prompt", type=str, default='A person with happy face', help="The prompt to edit image")
+    args = parser.parse_args()
+    run_PTI(run_name='', use_wandb=False, use_multi_id_training=True,args=args)
