@@ -13,12 +13,9 @@ def log_image_from_w(w, G, name,text_samples):
       if text_samples:
         name = name +  f'{text_samples}_.png'
       name = name + '.png'
-      path = os.path.join('/content/drive/MyDrive/zero_shot/PTI/results_paper/smile/output',name)
+      os.makedirs('output',exists_ok=True)
+      path = os.path.join('./output',name)
       pillow_image.save(path)
-    # wandb.log(
-    #     {f"{name}": [
-    #         wandb.Image(pillow_image, caption=f"current inversion {name}")]},
-    #     step=global_config.training_step)
 
 
 def log_images_from_w(ws, G, names,text_samples=None):
