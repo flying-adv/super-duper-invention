@@ -14,7 +14,7 @@ experiments_output_dir = './output/'
 
 ## Input info
 ### Input dir, where the images reside
-input_data_path = './results_paper/smile/input'
+input_data_path = './test'
 ### Inversion identifier, used to keeping track of the inversion results. Both the latent code and the generator
 input_data_id = 'joker'
 
