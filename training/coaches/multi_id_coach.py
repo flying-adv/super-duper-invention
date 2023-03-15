@@ -46,80 +46,78 @@ class MultiIDCoach(BaseCoach):
         self.prompt = prompt
 
     def train(self):
-        # text_condn = ['beard','french beard']
-        text_condn = ['big eyes', 'red eyes', 'big eyes with red eyes']
-        for text_c in text_condn:
-          text_samples = self.prompt
-          self.G.synthesis.train()
-          self.G.mapping.train()
+     
+        text_samples = self.prompt
+        self.G.synthesis.train()
+        self.G.mapping.train()
 
-          w_path_dir = f'{paths_config.embedding_base_dir}/{paths_config.input_data_id}'
-          os.makedirs(w_path_dir, exist_ok=True)
-          os.makedirs(f'{w_path_dir}/{paths_config.pti_results_keyword}', exist_ok=True)
+        w_path_dir = f'{paths_config.embedding_base_dir}/{paths_config.input_data_id}'
+        os.makedirs(w_path_dir, exist_ok=True)
+        os.makedirs(f'{w_path_dir}/{paths_config.pti_results_keyword}', exist_ok=True)
 
-          use_ball_holder = True
-          w_pivots = []
-          images = []
+        use_ball_holder = True
+        w_pivots = []
+        images = []
 
-          for fname, image in self.data_loader:
-              print(image.shape)
-              if self.image_counter >= hyperparameters.max_images_to_invert:
-                  break
+        for fname, image in self.data_loader:
+            print(image.shape)
+            if self.image_counter >= hyperparameters.max_images_to_invert:
+                break
 
-              image_name = fname[0]
-              if hyperparameters.first_inv_type == 'w+':
-                  embedding_dir = f'{w_path_dir}/{paths_config.e4e_results_keyword}/{image_name}'
-              else:
-                  embedding_dir = f'{w_path_dir}/{paths_config.pti_results_keyword}/{image_name}'
-              os.makedirs(embedding_dir, exist_ok=True)
+            image_name = fname[0]
+            if hyperparameters.first_inv_type == 'w+':
+                embedding_dir = f'{w_path_dir}/{paths_config.e4e_results_keyword}/{image_name}'
+            else:
+                embedding_dir = f'{w_path_dir}/{paths_config.pti_results_keyword}/{image_name}'
+            os.makedirs(embedding_dir, exist_ok=True)
 
-              text_features = self.clip_loss.get_text_embeddings([text_samples]*image.shape[0])
-              pred_w = text_features
-              # w_pivot = self.get_inversion(w_path_dir, image_name, image)
-              # if hyperparameters.use_last_w_pivots:
-              #     w_pivot = self.load_inversions(w_path_dir, image_name)
+            text_features = self.clip_loss.get_text_embeddings([text_samples]*image.shape[0])
+            pred_w = text_features
+            # w_pivot = self.get_inversion(w_path_dir, image_name, image)
+            # if hyperparameters.use_last_w_pivots:
+            #     w_pivot = self.load_inversions(w_path_dir, image_name)
 
-              # if not hyperparameters.use_last_w_pivots or w_pivot is None: 
-              w_pivot = self.calc_inversions(image, image_name,pred_w,text_samples,self.clip_loss)            
-              w_pivots.append(w_pivot)
-              images.append((image_name, image))
-              self.image_counter += 1
+            # if not hyperparameters.use_last_w_pivots or w_pivot is None: 
+            w_pivot = self.calc_inversions(image, image_name,pred_w,text_samples,self.clip_loss)            
+            w_pivots.append(w_pivot)
+            images.append((image_name, image))
+            self.image_counter += 1
 
-          for i in tqdm(range(hyperparameters.max_pti_steps)):
-              self.image_counter = 0
+        for i in tqdm(range(hyperparameters.max_pti_steps)):
+            self.image_counter = 0
 
-              for data, w_pivot in zip(images, w_pivots):
-                  image_name, image = data
+            for data, w_pivot in zip(images, w_pivots):
+                image_name, image = data
 
-                  if self.image_counter >= hyperparameters.max_images_to_invert:
-                      break
+                if self.image_counter >= hyperparameters.max_images_to_invert:
+                    break
 
-                  real_images_batch = image.to(global_config.device)
+                real_images_batch = image.to(global_config.device)
 
-                  generated_images = self.forward(w_pivot)
-                  loss, l2_loss_val, loss_lpips,loss_id = self.calc_loss(generated_images, real_images_batch, image_name,
-                                                                self.G, use_ball_holder, w_pivot)
+                generated_images = self.forward(w_pivot)
+                loss, l2_loss_val, loss_lpips,loss_id = self.calc_loss(generated_images, real_images_batch, image_name,
+                                                            self.G, use_ball_holder, w_pivot)
 
-                  loss_text = self.clip_loss(generated_images,text_samples)
-                  # print(loss_text)
-                  loss = 1.2 * loss + 0.5 * loss_text
-                  # loss = 0.5 * loss + 1.2 * loss_text
+                loss_text = self.clip_loss(generated_images,text_samples)
+                # print(loss_text)
+                loss = 1.2 * loss + 0.5 * loss_text
+                # loss = 0.5 * loss + 1.2 * loss_text
 
-                  self.optimizer.zero_grad()
-                  loss.backward(retain_graph=True)
-                  self.optimizer.step()
+                self.optimizer.zero_grad()
+                loss.backward(retain_graph=True)
+                self.optimizer.step()
 
-                  use_ball_holder = global_config.training_step % hyperparameters.locality_regularization_interval == 0
+                use_ball_holder = global_config.training_step % hyperparameters.locality_regularization_interval == 0
 
-                  global_config.training_step += 1
-                  self.image_counter += 1
+                global_config.training_step += 1
+                self.image_counter += 1
 
-          # if self.use_wandb:
-          log_images_from_w(w_pivots, self.G, [image[0] for image in images],text_samples)
-          self.restart_training()
-          w_pivots = []
-          images = []          
-          # del w_pivots
-          # del w_pivots
-          # torch.save(self.G,
-          #            f'{paths_config.checkpoints_dir}/model_{global_config.run_name}_multi_id.pt')
+        # if self.use_wandb:
+        log_images_from_w(w_pivots, self.G, [image[0] for image in images],text_samples)
+        self.restart_training()
+        w_pivots = []
+        images = []          
+        # del w_pivots
+        # del w_pivots
+        # torch.save(self.G,
+        #            f'{paths_config.checkpoints_dir}/model_{global_config.run_name}_multi_id.pt')
