@@ -30,7 +30,7 @@ def run_PTI(run_name='', use_wandb=False, use_multi_id_training=False,args=None)
     os.makedirs(embedding_dir_path, exist_ok=True)
 
     dataset = ImagesDataset(paths_config.input_data_path, transforms.Compose([
-        transforms.Resize((512, 512)),
+        transforms.Resize((1024, 1024)),
         transforms.ToTensor(),
         transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]))
 
