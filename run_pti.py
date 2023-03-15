@@ -50,4 +50,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Inference")
     parser.add_argument("--prompt", type=str, default='A person with happy face', help="The prompt to edit image")
     args = parser.parse_args()
-    run_PTI(run_name='', use_wandb=False, use_multi_id_training=True,args=args)
+    run_PTI(run_name='', use_wandb=False, use_multi_id_training=False,args=args)
