@@ -13,7 +13,7 @@ def log_image_from_w(w, G, name,text_samples):
       if text_samples:
         name = name +  f'{text_samples}_.png'
       name = name + '.png'
-      os.makedirs('output',exists_ok=True)
+      os.makedirs('output',exist_ok=True)
       path = os.path.join('./output',name)
       pillow_image.save(path)
 
