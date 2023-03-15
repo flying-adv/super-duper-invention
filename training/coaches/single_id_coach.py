@@ -5,7 +5,6 @@ from configs import paths_config, hyperparameters, global_config
 from training.coaches.base_coach import BaseCoach
 from utils.log_utils import log_images_from_w
 import torch
-from clip2latent.clip2latent import models
 from PIL import Image
 import clip
 
